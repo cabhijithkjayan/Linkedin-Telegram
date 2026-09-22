@@ -1,0 +1,131 @@
+name: LinkedIn Automation - Post 1
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Run in dry-run mode instead of publishing'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+  schedule:
+    - cron: '0 6 * * *'
+
+jobs:
+  run-automation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+
+    concurrency:
+      group: linkedin-automation-post-1
+      cancel-in-progress: false
+
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      LINKEDIN_CLIENT_ID: ${{ secrets.LINKEDIN_CLIENT_ID }}
+      LINKEDIN_CLIENT_SECRET: ${{ secrets.LINKEDIN_CLIENT_SECRET }}
+      LINKEDIN_REDIRECT_URI: ${{ secrets.LINKEDIN_REDIRECT_URI }}
+      LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+      PUBLIC_CSV_URL: ${{ secrets.PUBLIC_CSV_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Preflight checkpoint
+        shell: bash
+        run: |
+          echo "## Preflight checkpoint" >> "$GITHUB_STEP_SUMMARY"
+          for required_file in main.py requirements.txt prompts/claude_linkedin_prompt.txt prompts/image_prompt.txt; do
+            test -f "$required_file" || { echo "Missing file: $required_file"; exit 1; }
+            echo "- File present: $required_file" >> "$GITHUB_STEP_SUMMARY"
+          done
+          for secret_name in ANTHROPIC_API_KEY OPENAI_API_KEY LINKEDIN_CLIENT_ID LINKEDIN_CLIENT_SECRET LINKEDIN_ACCESS_TOKEN LINKEDIN_REDIRECT_URI PUBLIC_CSV_URL; do
+            if [ -z "${!secret_name}" ]; then
+              echo "Missing required secret: $secret_name"
+              echo "- Secret missing: $secret_name" >> "$GITHUB_STEP_SUMMARY"
+              exit 1
+            fi
+            echo "- Secret present: $secret_name" >> "$GITHUB_STEP_SUMMARY"
+          done
+          python - <<'PY'
+          import csv
+          import io
+          import os
+          import requests
+
+          response = requests.get(os.environ["PUBLIC_CSV_URL"], timeout=60)
+          response.raise_for_status()
+          fields = next(csv.reader(io.StringIO(response.text)), [])
+          if not fields:
+              raise SystemExit("PUBLIC_CSV_URL returned no CSV header")
+          print(f"Public CSV reachable: HTTP {response.status_code}; columns={len(fields)}")
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as summary:
+              summary.write(f"- Public CSV reachable: HTTP {response.status_code}; columns={len(fields)}\n")
+          PY
+
+      - name: Run automation
+        shell: bash
+        run: |
+          dry_run="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.dry_run || 'false' }}"
+          echo "Run mode: dry_run=$dry_run"
+          if [ "$dry_run" = "true" ]; then
+            python main.py --url "$PUBLIC_CSV_URL" --dry-run --output-csv "Ideas_marked.csv"
+          else
+            python main.py --url "$PUBLIC_CSV_URL" --no-dry-run --output-csv "Ideas_marked.csv"
+          fi
+
+      - name: Show published LinkedIn URL
+        if: always()
+        shell: bash
+        run: |
+          url_file=$(find outputs -maxdepth 1 -type f -name '*_url.txt' -print -quit 2>/dev/null || true)
+          if [ -n "$url_file" ]; then
+            post_url=$(cat "$url_file")
+            echo "Published LinkedIn post: $post_url"
+            echo "## LinkedIn post" >> "$GITHUB_STEP_SUMMARY"
+            echo "[$post_url]($post_url)" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "No published LinkedIn URL was produced. Check the Run automation logs."
+          fi
+
+      - name: Persist tracking CSV
+        if: success()
+        shell: bash
+        run: |
+          if [ -f "Ideas_marked.csv" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add Ideas_marked.csv
+            if ! git diff --cached --quiet; then
+              git commit -m "Update LinkedIn automation tracking CSV"
+              git push
+            fi
+          fi
+
+      - name: Upload generated outputs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: linkedin-automation-output
+          path: |
+            outputs/
+            generated_images/
+            logs/
+            Ideas_marked.csv

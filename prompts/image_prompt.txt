@@ -1,0 +1,14 @@
+Produce a professional LinkedIn post image that visually represents the core idea of the post below.
+
+Requirements:
+- Minimal text on image (max 6-8 words); avoid full paragraphs.
+- Clean corporate style suitable for B2B: use muted business colors (navy, deep green, warm ochre) and a simple sans-serif font.
+- Avoid logos, trademarks, or fake company names.
+- Avoid stock-photo clichés; prefer abstract or contextual business imagery.
+- Ensure legibility at 1200x627.
+- No fabricated statistics or claims.
+
+Input post (use to shape imagery):
+{post_text}
+
+Please produce one clear, LinkedIn-ready image concept and render it as a clean, high-resolution PNG without extra captions.
