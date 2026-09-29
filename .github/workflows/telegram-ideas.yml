@@ -1,0 +1,76 @@
+name: Telegram Ideas to LinkedIn
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # check the Ideas channel every 10 minutes
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Only post the draft in Telegram (do not post on LinkedIn)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: telegram-ideas
+  cancel-in-progress: false
+
+jobs:
+  ideas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TBOT_KEY: ${{ secrets.TBOT_KEY }}
+      IDEAS_CHAT_ID: ${{ secrets.IDEAS_CHAT_ID }}
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Read Ideas channel, draft and post
+        shell: bash
+        run: |
+          if [ "${{ github.event.inputs.dry_run }}" = "true" ]; then
+            python telegram_ideas.py --dry-run
+          else
+            python telegram_ideas.py
+          fi
+
+      - name: Remember processed ideas
+        if: always()
+        shell: bash
+        run: |
+          [ -f telegram_ideas_state.json ] || exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add telegram_ideas_state.json
+          git diff --cached --quiet && exit 0
+          git commit -m "Update Telegram ideas state"
+          git pull --rebase --autostash || true
+          git push || true
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: telegram-ideas-output
+          path: |
+            logs/
+            generated_images/
+          if-no-files-found: ignore
