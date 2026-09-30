@@ -1,0 +1,50 @@
+name: Telegram Jobs to LinkedIn
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # every 10 minutes (GitHub may delay runs a bit)
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (log only, do not post)"
+        type: boolean
+        default: false
+
+concurrency:
+  group: telegram-jobs
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Post new Telegram job posts to LinkedIn
+        env:
+          JOBS_BOT_KEY: ${{ secrets.JOBS_BOT_KEY }}
+          TBOT_KEY: ${{ secrets.TBOT_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
+          JOBS_CHAT_ID: "-1004296140869"
+          # Optional: override the default footer / Claude model
+          # JOBS_FOOTER: "To know more and download resources visit:\nhttps://abhijithkjayan.bolt.host/"
+          # JOBS_CLAUDE_MODEL: "claude-sonnet-4-5"
+        run: python telegram_jobs.py ${{ inputs.dry_run && '--dry-run' || '' }}
+
+      - name: Save state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add telegram_jobs_state.json || true
+          git diff --cached --quiet || (git commit -m "Update telegram jobs state" && git pull --rebase && git push)
