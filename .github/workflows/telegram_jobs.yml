@@ -39,11 +39,9 @@ jobs:
       - name: Post new Telegram job posts to LinkedIn
         env:
           TBOT_KEY: ${{ secrets.TBOT_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           JOBS_CHAT_ID: "-1004296140869"
           JOBS_MAX_POSTS: "10"   # max LinkedIn posts per run; extras wait for the next run
-          # Optional: JOBS_OPENAI_MODEL: "gpt-4o"
         run: python telegram_jobs.py ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.skip_backlog && '--skip-backlog' || '' }}
 
       - name: Save state
