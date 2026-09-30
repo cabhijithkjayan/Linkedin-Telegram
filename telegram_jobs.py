@@ -37,6 +37,27 @@ STATE_FILE = "telegram_jobs_state.json"
 MIN_CHARS = 15
 LINKEDIN_LIMIT_HARD = 2950  # LinkedIn hard limit is 3000
 
+def now_iso() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+
+def load_state() -> dict:
+    try:
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            state = json.load(f)
+    except (OSError, ValueError):
+        state = {}
+    state.setdefault("last_update_id", None)
+    state.setdefault("processed", {})
+    return state
+
+
+def save_state(state: dict) -> None:
+    state["processed"] = dict(list(state["processed"].items())[-300:])
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(state, f, indent=2, ensure_ascii=False)
+
+
 class Telegram:
     def __init__(self, token: str):
         self.base = f"https://api.telegram.org/bot{token}"
