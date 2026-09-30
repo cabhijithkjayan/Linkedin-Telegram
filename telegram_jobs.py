@@ -106,6 +106,9 @@ UAE_CITIES = ["dubai", "abu dhabi", "sharjah", "ajman", "fujairah", "ras al khai
 IGNORE_RE = re.compile(r"ats match|best cv|track\s*[a-z]\b|apply link checked|cv match|match score|^\s*[🟢🧭]", re.I)
 URL_RE = re.compile(r"https?://[^\s)>\]]+")
 EMAIL_RE = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
+TITLE_LABEL_RE = re.compile(r"^(?:job\s*title|position|role|vacancy)\s*[:\-]\s*(.*)$", re.I)
+HEADER_RE = re.compile(r"job alert|new jobs?|jobs? (?:post|update|opening)|hiring now|vacanc|naukri|indeed|linkedin|bayt|gulftalent|alert", re.I)
+EDU_RE = re.compile(r"education|qualification|degree|bachelor|master|\bmba\b|diploma|graduate|\bcpa\b|\bacca\b|\bcma\b|chartered|\bca\b", re.I)
 LEADING_JUNK = re.compile(r"^[^\w#]+")
 FUNCTION_TAGS = [  # (keywords in title, hashtags)
     (("financ", "fp&a", "account", "audit", "tax", "treasury", "controller"), ["Finance", "Accounting"]),
@@ -133,12 +136,25 @@ def parse_job(raw: str) -> dict:
     lines = [l.strip() for l in raw.splitlines()]
     lines = [l for l in lines if l]
     keep = [l for l in lines if not IGNORE_RE.search(l)]
-    job = {"title": _clean(keep[0]) if keep else "", "company": "", "location": "", "type": "",
-           "experience": "", "skills": [], "highlights": [], "apply": [], "email": "", "other": []}
+    title = ""
+    for l in keep:                                   # explicit "Job Title: ..." / "Role: ..." wins
+        m = TITLE_LABEL_RE.match(_clean(l))
+        if m and m.group(1).strip():
+            title = m.group(1).strip()
+            break
+    if not title:                                    # else first line that is not a header like "Naukrigulf job alert"
+        for l in keep:
+            c = _clean(l)
+            if c and not HEADER_RE.search(c) and not URL_RE.search(c):
+                title = c
+                break
+    keep = [l for l in keep if _clean(l) != title]
+    job = {"title": title, "company": "", "location": "", "type": "", "experience": "", "education": "",
+           "skills": [], "highlights": [], "apply": [], "email": "", "other": []}
 
     section = None
     used_urls = set()
-    for line in keep[1:]:
+    for line in keep:
         low = line.lower()
         body = _clean(line)
 
@@ -150,6 +166,9 @@ def parse_job(raw: str) -> dict:
             section = None
         elif low.startswith("💼") or "employment type" in low or "job type" in low:
             job["type"] = _after_colon(line) if ":" in line else body
+            section = None
+        elif EDU_RE.search(low) and len(body) < 160 and not URL_RE.search(line) and not job["education"]:
+            job["education"] = _after_colon(line) if ":" in line else body
             section = None
         elif "experience" in low and len(body) < 120 and not URL_RE.search(line):
             job["experience"] = _after_colon(line) if ":" in line else body
@@ -261,10 +280,20 @@ def format_job_post(raw: str) -> str | None:
         out.append("A new opportunity is available for professionals in this field.")
     if job["highlights"]:
         out += ["", "🎯 Role Highlights"] + [f"• {h}" for h in job["highlights"]]
-    out += ["", "📄 Candidate Profile"]
-    focus = ", ".join(job["skills"][:4])
-    out.append(f"This role may be relevant for professionals with a background in {job['title']}"
-               + (f", particularly those experienced in {focus}." if focus else "."))
+    exp, edu = job["experience"].strip().rstrip("."), job["education"].strip().rstrip(".")
+    if exp or edu:
+        parts = []
+        if exp:
+            parts.append(f"{exp} of relevant experience" if re.search(r"\d", exp) and "experience" not in exp.lower() else exp)
+        if edu:
+            e = edu[0].lower() + edu[1:] if edu[:2].islower() or not edu[:2].isupper() else edu
+            art = "an" if e[:1].lower() in "aeiou" else "a"
+            parts.append(f"{art} {e}" if re.search(r"degree|bachelor|master|diploma|mba|graduate|certif", e, re.I)
+                         else f"an educational background in {e}")
+        focus = ", ".join(job["skills"][:4])
+        sent = "This role may be relevant for professionals with " + " and ".join(parts)
+        sent += f", particularly those experienced in {focus}." if focus else "."
+        out += ["", "📄 Candidate Profile", sent]
     if job["apply"]:
         out += ["", "📩 Application:"]
         for name, url in job["apply"]:
