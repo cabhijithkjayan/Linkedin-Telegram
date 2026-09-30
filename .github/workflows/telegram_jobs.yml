@@ -2,7 +2,9 @@ name: Telegram Jobs to LinkedIn
 
 on:
   schedule:
-    - cron: "*/10 * * * *"   # every 10 minutes (GitHub may delay runs a bit)
+    # GitHub cron is in UTC. IST = UTC+5:30
+    - cron: "30 3 * * *"   # 09:00 AM IST
+    - cron: "30 8 * * *"   # 02:00 PM IST
   workflow_dispatch:
     inputs:
       dry_run:
@@ -32,17 +34,15 @@ jobs:
 
       - name: Post new Telegram job posts to LinkedIn
         env:
-          JOBS_BOT_KEY: ${{ secrets.JOBS_BOT_KEY }}
           TBOT_KEY: ${{ secrets.TBOT_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           JOBS_CHAT_ID: "-1004296140869"
-          # Optional: override the default footer / Claude model
-          # JOBS_FOOTER: "To know more and download resources visit:\nhttps://abhijithkjayan.bolt.host/"
-          # JOBS_CLAUDE_MODEL: "claude-sonnet-4-5"
+          # Optional: JOBS_OPENAI_MODEL: "gpt-4o"
         run: python telegram_jobs.py ${{ inputs.dry_run && '--dry-run' || '' }}
 
       - name: Save state
+        if: ${{ always() && !inputs.dry_run }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
