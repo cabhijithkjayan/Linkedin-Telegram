@@ -11,6 +11,10 @@ on:
         description: "Dry run (log only, do not post)"
         type: boolean
         default: false
+      skip_backlog:
+        description: "Skip all existing posts (mark as done, post nothing) - use once before going live"
+        type: boolean
+        default: false
 
 concurrency:
   group: telegram-jobs
@@ -38,8 +42,9 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
           JOBS_CHAT_ID: "-1004296140869"
+          JOBS_MAX_POSTS: "10"   # max LinkedIn posts per run; extras wait for the next run
           # Optional: JOBS_OPENAI_MODEL: "gpt-4o"
-        run: python telegram_jobs.py ${{ inputs.dry_run && '--dry-run' || '' }}
+        run: python telegram_jobs.py ${{ inputs.dry_run && '--dry-run' || '' }} ${{ inputs.skip_backlog && '--skip-backlog' || '' }}
 
       - name: Save state
         if: ${{ always() && !inputs.dry_run }}
