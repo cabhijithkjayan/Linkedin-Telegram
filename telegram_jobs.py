@@ -180,13 +180,15 @@ def publish(text: str) -> str:
     return f"https://www.linkedin.com/feed/update/{post_id}/"
 
 
-def run(dry_run: bool) -> int:
+def run(dry_run: bool, skip_backlog: bool = False) -> int:
     token = (os.environ.get("TBOT_KEY") or "").strip()
     if not token:
         logger.error("TBOT_KEY secret is missing")
         return 1
     jobs_chat = str(os.environ.get("JOBS_CHAT_ID") or DEFAULT_JOBS_CHAT_ID).strip()
     notify = os.environ.get("JOBS_REPLY", "false").lower() == "true"
+    max_posts = int(os.environ.get("JOBS_MAX_POSTS") or 10)   # per run; the rest wait for the next run
+    posted = 0
     tg = Telegram(token)
     state = load_state()
 
@@ -223,6 +225,14 @@ def run(dry_run: bool) -> int:
             advance()
             continue
 
+        if skip_backlog:
+            state["processed"][key] = {"posted": now_iso(), "status": "SKIPPED_BACKLOG"}
+            advance()
+            continue
+        if posted >= max_posts:
+            blocked = True   # leave the rest for the next run
+            continue
+
         try:
             post = format_job_post(text)
             if post is None:
@@ -233,6 +243,7 @@ def run(dry_run: bool) -> int:
                 logger.info(f"[dry-run] would post {key}:\n{post}\n")
                 continue
             url = publish(post)
+            posted += 1
             state["processed"][key] = {"posted": now_iso(), "status": "PUBLISHED", "linkedin_url": url}
             logger.info(f"Published {key} -> {url}")
             advance()
@@ -260,7 +271,10 @@ def run(dry_run: bool) -> int:
 def main(argv=None) -> int:
     p = argparse.ArgumentParser()
     p.add_argument("--dry-run", action="store_true")
-    return run(p.parse_args(argv).dry_run)
+    p.add_argument("--skip-backlog", action="store_true",
+                   help="Mark all waiting Telegram posts as done WITHOUT posting them")
+    args = p.parse_args(argv)
+    return run(args.dry_run, args.skip_backlog)
 
 
 if __name__ == "__main__":
