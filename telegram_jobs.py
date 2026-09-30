@@ -3,7 +3,7 @@ Telegram JOBS channel -> LinkedIn (text only, in the fixed job-post template).
 
 Every run:
   1. Reads new posts from the Jobs Telegram channel with the bot (TBOT_KEY).
-  2. Uses OpenAI (OPENAI_API_KEY) to rewrite each post into the fixed template
+  2. Uses Claude (ANTHROPIC_API_KEY, text only - no images, no OpenAI) to rewrite each post into the fixed template
      below - only facts found in the post, nothing invented, links kept as-is.
   3. Publishes it on LinkedIn as a TEXT-ONLY post, with the fixed footer.
   4. Optionally replies in the channel with the LinkedIn URL.
@@ -34,7 +34,7 @@ DEFAULT_JOBS_CHAT_ID = "-1004296140869"
 STATE_FILE = "telegram_jobs_state.json"
 MIN_CHARS = 15
 LINKEDIN_LIMIT = 2900  # LinkedIn hard limit is 3000
-OPENAI_MODEL = os.environ.get("JOBS_OPENAI_MODEL", "gpt-4o")
+CLAUDE_MODEL = os.environ.get("JOBS_CLAUDE_MODEL", "claude-sonnet-4-5")
 
 DEFAULT_FOOTER = (
     "To know more and download resources visit:\n"
@@ -74,12 +74,19 @@ SYSTEM_PROMPT = f"""You convert a raw job post from a Telegram channel into a Li
 {TEMPLATE}
 Rules:
 - Keep the template's emojis, line order, headings and wording. Replace only the [bracketed] parts.
-- Use ONLY facts present in the raw post. Never invent a company, salary, email, link or location.
-- If a detail is missing: omit the Experience line, the Email line and its Subject line if no email is given; if no application link is given, omit the Application line and link. Location/Company/Employment Type may be omitted the same way if truly absent. Use 3-5 skills and 3-4 highlights, fewer if the post has fewer.
-- Copy every URL and email exactly as given. Keep the raw post's main application link.
-- Replace [Function] and [Industry] hashtags with single-word CamelCase tags that fit the job (e.g. #Accounting #Banking). Keep the other hashtags.
-- If the raw post mentions a non-UAE location, replace #UAEJobs #DubaiJobs #AbuDhabiJobs with fitting location hashtags.
-- Do NOT add the "To know more..." footer or any other link - it is added automatically.
+- Use ONLY facts present in the raw post. Never invent a company, salary, email, link, responsibility or location.
+- The raw post may contain internal notes meant for the channel owner. IGNORE all of these and never include them: ATS match, Best CV, Track, "Apply link checked", scores, percentages, CV names, and any candidate name.
+- Company / Recruiter: the hiring company or the job board/recruiter named in the post (e.g. "Jobs Ai via Trabajo.org").
+- Location: city + country. If the city is in the UAE (Dubai, Abu Dhabi, Sharjah, etc.) write it as "City, UAE".
+- Key skills: use the skills/keywords listed in the post (e.g. the ✅ line), plus the obvious core skills implied by the job title. 3-5 items.
+- Role Highlights: only if the post states responsibilities or requirements; if it does not, remove the whole "🎯 Role Highlights" section.
+- Candidate Profile: one sentence built from the job title and skills only.
+- Application: list EVERY apply link from the post, one per line as "Platform name: full URL". Copy URLs exactly, including tracking parameters. Never shorten or change them.
+- Email: if an email is given, keep the "📧 Email:" line and "Subject: Application – [Job Title]" (no candidate name at all). If no email, remove both lines.
+- Experience / Employment Type: remove the line if not stated.
+- Other Links: after the post, add a final line "OTHER_LINKS:" followed by any company website or other useful links from the post, one per line (nothing after it if there are none). Do not put them inside the post.
+- Replace [Function] and [Industry] hashtags with single-word CamelCase tags that fit the job (e.g. #Finance #Accounting). Keep the other hashtags. If the job is outside the UAE, replace #UAEJobs #DubaiJobs #AbuDhabiJobs with fitting location hashtags.
+- Do NOT add the "To know more..." footer - it is added automatically.
 - Output only the final post text, no commentary, no code fences, no markdown bold.
 - If the raw post is not a job opening, output exactly: NOT_A_JOB"""
 
@@ -144,26 +151,28 @@ def extract_text(msg: dict) -> str:
 
 
 def format_job_post(raw: str) -> str | None:
-    """Rewrite raw Telegram text into the template with OpenAI. None = not a job."""
-    key = (os.environ.get("OPENAI_API_KEY") or "").strip()
+    """Rewrite raw Telegram text into the template (text only). None = not a job."""
+    key = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
     if not key:
-        raise RuntimeError("OPENAI_API_KEY secret is missing")
+        raise RuntimeError("ANTHROPIC_API_KEY secret is missing")
     r = requests.post(
-        "https://api.openai.com/v1/chat/completions",
-        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-        json={"model": OPENAI_MODEL, "temperature": 0.3,
-              "messages": [{"role": "system", "content": SYSTEM_PROMPT},
-                           {"role": "user", "content": f"Raw job post:\n\n{raw}"}]},
+        "https://api.anthropic.com/v1/messages",
+        headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+        json={"model": CLAUDE_MODEL, "max_tokens": 1500, "system": SYSTEM_PROMPT,
+              "messages": [{"role": "user", "content": f"Raw job post:\n\n{raw}"}]},
         timeout=90,
     )
     if r.status_code != 200:
-        raise RuntimeError(f"OpenAI API HTTP {r.status_code}: {r.text[:200]}")
-    out = (r.json()["choices"][0]["message"]["content"] or "").strip()
+        raise RuntimeError(f"Claude API HTTP {r.status_code}: {r.text[:200]}")
+    out = "".join(b.get("text", "") for b in r.json().get("content", [])).strip()
     if not out or out == "NOT_A_JOB":
         return None
+    body, _, other = out.partition("OTHER_LINKS:")
+    body, other = body.rstrip(), other.strip()
     footer = (os.environ.get("JOBS_FOOTER") or DEFAULT_FOOTER).replace("\\n", "\n").strip()
-    body = out[: LINKEDIN_LIMIT - len(footer) - 2].rstrip()  # trim body, never the footer
-    return f"{body}\n\n{footer}"
+    tail = footer + (("\n" + other) if other else "")
+    body = body[: LINKEDIN_LIMIT - len(tail) - 2].rstrip()  # trim body, never the footer/links
+    return f"{body}\n\n{tail}"
 
 
 def publish(text: str) -> str:
