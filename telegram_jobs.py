@@ -2,9 +2,8 @@
 Telegram JOBS channel -> LinkedIn (text only, in the fixed job-post template).
 
 Every run:
-  1. Reads new posts from the Jobs Telegram channel (bot token in JOBS_BOT_KEY,
-     falls back to TBOT_KEY).
-  2. Uses Claude (ANTHROPIC_API_KEY) to rewrite each post into the fixed template
+  1. Reads new posts from the Jobs Telegram channel with the bot (TBOT_KEY).
+  2. Uses OpenAI (OPENAI_API_KEY) to rewrite each post into the fixed template
      below - only facts found in the post, nothing invented, links kept as-is.
   3. Publishes it on LinkedIn as a TEXT-ONLY post, with the fixed footer.
   4. Optionally replies in the channel with the LinkedIn URL.
@@ -35,7 +34,7 @@ DEFAULT_JOBS_CHAT_ID = "-1004296140869"
 STATE_FILE = "telegram_jobs_state.json"
 MIN_CHARS = 15
 LINKEDIN_LIMIT = 2900  # LinkedIn hard limit is 3000
-CLAUDE_MODEL = os.environ.get("JOBS_CLAUDE_MODEL", "claude-sonnet-4-5")
+OPENAI_MODEL = os.environ.get("JOBS_OPENAI_MODEL", "gpt-4o")
 
 DEFAULT_FOOTER = (
     "To know more and download resources visit:\n"
@@ -64,7 +63,7 @@ This role may be relevant for professionals with a background in [relevant funct
 📩 Application:
 [Application Link]
 📧 Email: [Recruitment Email]
-Subject: Application – [Job Title] – [Candidate Name]
+Subject: Application – [Job Title]
 💡 If you know someone who fits this opportunity, feel free to tag them or share this post.
 🔄 Sharing opportunities can help someone in your network discover their next career move.
 #Hiring #JobAlert #UAEJobs #DubaiJobs #AbuDhabiJobs #[Function] #[Industry] #CareerOpportunity #FinanceJobs
@@ -78,7 +77,6 @@ Rules:
 - Use ONLY facts present in the raw post. Never invent a company, salary, email, link or location.
 - If a detail is missing: omit the Experience line, the Email line and its Subject line if no email is given; if no application link is given, omit the Application line and link. Location/Company/Employment Type may be omitted the same way if truly absent. Use 3-5 skills and 3-4 highlights, fewer if the post has fewer.
 - Copy every URL and email exactly as given. Keep the raw post's main application link.
-- Replace [Candidate Name] literally with: [Your Name]
 - Replace [Function] and [Industry] hashtags with single-word CamelCase tags that fit the job (e.g. #Accounting #Banking). Keep the other hashtags.
 - If the raw post mentions a non-UAE location, replace #UAEJobs #DubaiJobs #AbuDhabiJobs with fitting location hashtags.
 - Do NOT add the "To know more..." footer or any other link - it is added automatically.
@@ -146,25 +144,25 @@ def extract_text(msg: dict) -> str:
 
 
 def format_job_post(raw: str) -> str | None:
-    """Rewrite raw Telegram text into the template with Claude. None = not a job."""
-    key = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
+    """Rewrite raw Telegram text into the template with OpenAI. None = not a job."""
+    key = (os.environ.get("OPENAI_API_KEY") or "").strip()
     if not key:
-        raise RuntimeError("ANTHROPIC_API_KEY secret is missing")
+        raise RuntimeError("OPENAI_API_KEY secret is missing")
     r = requests.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-        json={"model": CLAUDE_MODEL, "max_tokens": 1500, "system": SYSTEM_PROMPT,
-              "messages": [{"role": "user", "content": f"Raw job post:\n\n{raw}"}]},
+        "https://api.openai.com/v1/chat/completions",
+        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+        json={"model": OPENAI_MODEL, "temperature": 0.3,
+              "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                           {"role": "user", "content": f"Raw job post:\n\n{raw}"}]},
         timeout=90,
     )
     if r.status_code != 200:
-        raise RuntimeError(f"Claude API HTTP {r.status_code}: {r.text[:200]}")
-    out = "".join(b.get("text", "") for b in r.json().get("content", [])).strip()
+        raise RuntimeError(f"OpenAI API HTTP {r.status_code}: {r.text[:200]}")
+    out = (r.json()["choices"][0]["message"]["content"] or "").strip()
     if not out or out == "NOT_A_JOB":
         return None
     footer = (os.environ.get("JOBS_FOOTER") or DEFAULT_FOOTER).replace("\\n", "\n").strip()
-    # keep footer intact: trim the body, not the footer
-    body = out[: LINKEDIN_LIMIT - len(footer) - 2].rstrip()
+    body = out[: LINKEDIN_LIMIT - len(footer) - 2].rstrip()  # trim body, never the footer
     return f"{body}\n\n{footer}"
 
 
@@ -183,12 +181,12 @@ def publish(text: str) -> str:
 
 
 def run(dry_run: bool) -> int:
-    token = (os.environ.get("JOBS_BOT_KEY") or os.environ.get("TBOT_KEY") or "").strip()
+    token = (os.environ.get("TBOT_KEY") or "").strip()
     if not token:
-        logger.error("JOBS_BOT_KEY (or TBOT_KEY) secret is missing")
+        logger.error("TBOT_KEY secret is missing")
         return 1
     jobs_chat = str(os.environ.get("JOBS_CHAT_ID") or DEFAULT_JOBS_CHAT_ID).strip()
-    notify = os.environ.get("JOBS_REPLY", "true").lower() != "false"
+    notify = os.environ.get("JOBS_REPLY", "false").lower() == "true"
     tg = Telegram(token)
     state = load_state()
 
@@ -204,23 +202,32 @@ def run(dry_run: bool) -> int:
     logger.info(f"{len(updates)} new Telegram update(s)")
 
     failures = 0
+    ack_id = state["last_update_id"]  # highest update safe to acknowledge
+    blocked = False                    # once a post fails, stop advancing so it is retried next run
     for upd in updates:
         msg = upd.get("channel_post") or {}
         chat_id = str((msg.get("chat") or {}).get("id"))
         msg_id = msg.get("message_id")
         key = f"{chat_id}:{msg_id}"
-        state["last_update_id"] = upd["update_id"]
+
+        def advance():
+            nonlocal ack_id
+            if not blocked:
+                ack_id = upd["update_id"]
 
         if chat_id != jobs_chat or key in state["processed"]:
+            advance()
             continue
         text = extract_text(msg)
         if len(text) < MIN_CHARS or text.startswith("/"):
+            advance()
             continue
 
         try:
             post = format_job_post(text)
             if post is None:
                 logger.info(f"Skipping {key}: not a job post")
+                advance()
                 continue
             if dry_run:
                 logger.info(f"[dry-run] would post {key}:\n{post}\n")
@@ -228,20 +235,24 @@ def run(dry_run: bool) -> int:
             url = publish(post)
             state["processed"][key] = {"posted": now_iso(), "status": "PUBLISHED", "linkedin_url": url}
             logger.info(f"Published {key} -> {url}")
+            advance()
             if notify:
                 try:
                     tg.reply(chat_id, f"✅ Posted on LinkedIn:\n{url}", msg_id)
                 except Exception:
                     pass
-        except Exception as exc:
+        except Exception:
             failures += 1
-            logger.exception(f"Failed on {key}")
-            state["processed"][key] = {"posted": now_iso(), "status": "FAILED", "error": str(exc)[:500]}
-        save_state(state)
+            blocked = True
+            logger.exception(f"Failed on {key} - will retry on the next run")
+        if not dry_run:
+            state["last_update_id"] = ack_id
+            save_state(state)   # save after every post so a crash never double-posts
 
-    if updates:
-        tg.get_updates(state["last_update_id"] + 1)  # acknowledge
     if not dry_run:
+        state["last_update_id"] = ack_id
+        if updates and ack_id is not None:
+            tg.get_updates(ack_id + 1)   # acknowledge handled updates
         save_state(state)
     return 1 if failures else 0
 
