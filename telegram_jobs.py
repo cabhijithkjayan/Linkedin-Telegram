@@ -101,7 +101,7 @@ DEFAULT_FOOTER = (
     "https://abhijithkjayan.bolt.host/"
 )
 
-CV_LINE = "Upload your CV in my dashboard and join the community"
+CV_LINE = "Upload your CV in my dashboard by clicking join the community"
 UAE_CITIES = ["dubai", "abu dhabi", "sharjah", "ajman", "fujairah", "ras al khaimah", "umm al quwain", "al ain"]
 # lines that are internal notes for the channel owner - never posted
 IGNORE_RE = re.compile(r"ats match|best cv|track\s*[a-z]\b|apply link checked|cv match|match score|^\s*[🟢🧭]", re.I)
