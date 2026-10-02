@@ -101,6 +101,7 @@ DEFAULT_FOOTER = (
     "https://abhijithkjayan.bolt.host/"
 )
 
+CV_LINE = "Upload your CV in my dashboard and join the community"
 UAE_CITIES = ["dubai", "abu dhabi", "sharjah", "ajman", "fujairah", "ras al khaimah", "umm al quwain", "al ain"]
 # lines that are internal notes for the channel owner - never posted
 IGNORE_RE = re.compile(r"ats match|best cv|track\s*[a-z]\b|apply link checked|cv match|match score|^\s*[🟢🧭]", re.I)
@@ -306,6 +307,8 @@ def format_job_post(raw: str) -> str | None:
             "", _hashtags(job["title"], job["location"]), ""]
     footer = (os.environ.get("JOBS_FOOTER") or DEFAULT_FOOTER).replace("\\n", "\n").strip()
     out.append(footer)
+    out.append("")
+    out.append(CV_LINE)
     out += job["other"]
     return "\n".join(out)[:LINKEDIN_LIMIT_HARD]
 
