@@ -4,7 +4,7 @@ on:
   schedule:
     # GitHub cron is in UTC. UAE (GST) = UTC+4
     # Every hour on the hour from 03:00 to 18:00 UTC = 7:00 AM to 10:00 PM UAE
-    - cron: "0 3-18 * * *"
+   - cron: "0 * * * *" # Every hour, on the hour (UAE time) # Every hour, on the hour in India (IST)
   workflow_dispatch:
     inputs:
       dry_run:
