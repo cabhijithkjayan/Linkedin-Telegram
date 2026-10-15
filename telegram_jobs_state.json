@@ -1,51 +1,6 @@
 {
-  "last_update_id": 270429694,
+  "last_update_id": 270429713,
   "processed": {
-    "-1004296140869:97": {
-      "posted": "2026-10-01T15:34:07Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511448368854925312/"
-    },
-    "-1004296140869:98": {
-      "posted": "2026-10-01T15:34:08Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511448372717895681/"
-    },
-    "-1004296140869:99": {
-      "posted": "2026-10-02T09:58:41Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511726344154714112/"
-    },
-    "-1004296140869:100": {
-      "posted": "2026-10-02T09:58:42Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511726347011031040/"
-    },
-    "-1004296140869:101": {
-      "posted": "2026-10-02T09:58:44Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511726352128069632/"
-    },
-    "-1004296140869:102": {
-      "posted": "2026-10-02T09:58:44Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511726356238471169/"
-    },
-    "-1004296140869:103": {
-      "posted": "2026-10-02T09:58:45Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511726358851375104/"
-    },
-    "-1004296140869:104": {
-      "posted": "2026-10-02T09:58:46Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511726361489907712/"
-    },
-    "-1004296140869:105": {
-      "posted": "2026-10-02T09:58:47Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7511726365264482304/"
-    },
     "-1004296140869:106": {
       "posted": "2026-10-02T09:58:48Z",
       "status": "PUBLISHED",
@@ -1500,6 +1455,51 @@
       "posted": "2026-10-15T09:42:05Z",
       "status": "PUBLISHED",
       "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516433208251506688/"
+    },
+    "-1004296140869:502": {
+      "posted": "2026-10-15T15:32:38Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521423524511744/"
+    },
+    "-1004296140869:503": {
+      "posted": "2026-10-15T15:32:39Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521429262131200/"
+    },
+    "-1004296140869:504": {
+      "posted": "2026-10-15T15:32:40Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521433733197824/"
+    },
+    "-1004296140869:505": {
+      "posted": "2026-10-15T15:32:41Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521440192548867/"
+    },
+    "-1004296140869:506": {
+      "posted": "2026-10-15T15:32:43Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521444860735490/"
+    },
+    "-1004296140869:507": {
+      "posted": "2026-10-15T15:32:44Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521448975327233/"
+    },
+    "-1004296140869:508": {
+      "posted": "2026-10-15T15:32:44Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521452439851008/"
+    },
+    "-1004296140869:509": {
+      "posted": "2026-10-15T15:32:45Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521455665336320/"
+    },
+    "-1004296140869:510": {
+      "posted": "2026-10-15T15:32:46Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516521459998064640/"
     }
   }
 }
