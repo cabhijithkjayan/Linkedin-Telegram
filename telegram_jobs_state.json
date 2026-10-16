@@ -1,16 +1,6 @@
 {
-  "last_update_id": 270429737,
+  "last_update_id": 270429739,
   "processed": {
-    "-1004296140869:130": {
-      "posted": "2026-10-03T08:57:31Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7512073339129978880/"
-    },
-    "-1004296140869:131": {
-      "posted": "2026-10-03T08:57:32Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7512073342389149696/"
-    },
     "-1004296140869:132": {
       "posted": "2026-10-03T08:57:33Z",
       "status": "PUBLISHED",
@@ -1500,6 +1490,16 @@
       "posted": "2026-10-16T15:19:18Z",
       "status": "PUBLISHED",
       "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516880455917420544/"
+    },
+    "-1004296140869:535": {
+      "posted": "2026-10-16T19:50:51Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516948795771736064/"
+    },
+    "-1004296140869:536": {
+      "posted": "2026-10-16T19:50:52Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7516948799362084864/"
     }
   }
 }
