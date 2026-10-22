@@ -1,56 +1,6 @@
 {
-  "last_update_id": 270429839,
+  "last_update_id": 270429849,
   "processed": {
-    "-1004296140869:283": {
-      "posted": "2026-10-06T11:53:11Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513204710472830976/"
-    },
-    "-1004296140869:284": {
-      "posted": "2026-10-06T11:53:12Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513204713828360193/"
-    },
-    "-1004296140869:285": {
-      "posted": "2026-10-06T11:53:13Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513204716995076097/"
-    },
-    "-1004296140869:286": {
-      "posted": "2026-10-06T18:51:14Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513309913427628032/"
-    },
-    "-1004296140869:287": {
-      "posted": "2026-10-06T18:51:15Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513309916963635201/"
-    },
-    "-1004296140869:288": {
-      "posted": "2026-10-06T18:51:16Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513309920968982528/"
-    },
-    "-1004296140869:289": {
-      "posted": "2026-10-06T18:51:17Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513309924651585536/"
-    },
-    "-1004296140869:290": {
-      "posted": "2026-10-06T18:51:18Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513309928938348544/"
-    },
-    "-1004296140869:291": {
-      "posted": "2026-10-06T18:51:18Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513309932172001280/"
-    },
-    "-1004296140869:292": {
-      "posted": "2026-10-06T18:51:19Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7513309934999203840/"
-    },
     "-1004296140869:293": {
       "posted": "2026-10-06T22:56:54Z",
       "status": "PUBLISHED",
@@ -1500,6 +1450,56 @@
       "posted": "2026-10-21T15:53:30Z",
       "status": "PUBLISHED",
       "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518701003744038912/"
+    },
+    "-1004296140869:637": {
+      "posted": "2026-10-22T09:55:42Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973348026929153/"
+    },
+    "-1004296140869:638": {
+      "posted": "2026-10-22T09:55:44Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973353886629890/"
+    },
+    "-1004296140869:639": {
+      "posted": "2026-10-22T09:55:45Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973359393746945/"
+    },
+    "-1004296140869:640": {
+      "posted": "2026-10-22T09:55:46Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973364191784960/"
+    },
+    "-1004296140869:641": {
+      "posted": "2026-10-22T09:55:47Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973368520355840/"
+    },
+    "-1004296140869:642": {
+      "posted": "2026-10-22T09:55:48Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973373222285312/"
+    },
+    "-1004296140869:643": {
+      "posted": "2026-10-22T09:55:50Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973378700140545/"
+    },
+    "-1004296140869:644": {
+      "posted": "2026-10-22T09:55:51Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973384001544192/"
+    },
+    "-1004296140869:645": {
+      "posted": "2026-10-22T09:55:52Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973388078583808/"
+    },
+    "-1004296140869:646": {
+      "posted": "2026-10-22T09:55:53Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7518973393145110528/"
     }
   }
 }
