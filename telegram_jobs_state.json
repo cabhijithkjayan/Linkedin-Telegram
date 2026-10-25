@@ -1,31 +1,6 @@
 {
-  "last_update_id": 270429919,
+  "last_update_id": 270429924,
   "processed": {
-    "-1004296140869:385": {
-      "posted": "2026-10-09T23:07:09Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7514461481615278081/"
-    },
-    "-1004296140869:386": {
-      "posted": "2026-10-09T23:07:10Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7514461485981597696/"
-    },
-    "-1004296140869:387": {
-      "posted": "2026-10-09T23:07:11Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7514461490473508864/"
-    },
-    "-1004296140869:388": {
-      "posted": "2026-10-09T23:07:12Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7514461494193938432/"
-    },
-    "-1004296140869:389": {
-      "posted": "2026-10-10T11:02:18Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7514641456431517697/"
-    },
     "-1004296140869:390": {
       "posted": "2026-10-10T11:02:19Z",
       "status": "PUBLISHED",
@@ -1500,6 +1475,31 @@
       "posted": "2026-10-25T09:40:10Z",
       "status": "PUBLISHED",
       "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520056600787628032/"
+    },
+    "-1004296140869:717": {
+      "posted": "2026-10-25T14:55:00Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520135832066748416/"
+    },
+    "-1004296140869:718": {
+      "posted": "2026-10-25T14:55:01Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520135836672237568/"
+    },
+    "-1004296140869:719": {
+      "posted": "2026-10-25T14:55:02Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520135841617436672/"
+    },
+    "-1004296140869:720": {
+      "posted": "2026-10-25T14:55:04Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520135846658994176/"
+    },
+    "-1004296140869:721": {
+      "posted": "2026-10-25T14:55:05Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520135851876528128/"
     }
   }
 }
