@@ -1,11 +1,6 @@
 {
-  "last_update_id": 270429924,
+  "last_update_id": 270429925,
   "processed": {
-    "-1004296140869:390": {
-      "posted": "2026-10-10T11:02:19Z",
-      "status": "PUBLISHED",
-      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7514641460328157184/"
-    },
     "-1004296140869:391": {
       "posted": "2026-10-10T11:02:20Z",
       "status": "PUBLISHED",
@@ -1500,6 +1495,11 @@
       "posted": "2026-10-25T14:55:05Z",
       "status": "PUBLISHED",
       "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520135851876528128/"
+    },
+    "-1004296140869:722": {
+      "posted": "2026-10-25T18:17:30Z",
+      "status": "PUBLISHED",
+      "linkedin_url": "https://www.linkedin.com/feed/update/urn:li:share:7520186790649950208/"
     }
   }
 }
